@@ -141,6 +141,7 @@ services:
     ports:
       - 8080:8080
       - 9090:9090
+      - 8443:8443
     environment:
       - ZKEVM_BRIDGE_DATABASE_USER=test_user
       - ZKEVM_BRIDGE_DATABASE_PASSWORD=test_password
@@ -151,6 +152,8 @@ services:
       - ./test/test.keystore.claimtx:/pk/keystore.claimtxmanager
       - ./config/config.local.toml:/app/config.toml
       - ./sentinel/config.json:/app/sentinel_config.json
+      - ./config/server.crt:/app/server.crt
+      - ./config/server.key:/app/server.key
     command:
       - "/bin/sh"
       - "-c"

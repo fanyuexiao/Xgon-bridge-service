@@ -31,8 +31,24 @@ func RunServer(cfg Config, bridgeService pb.BridgeServiceServer) error {
 		return fmt.Errorf("invalid TCP port for HTTP gateway: '%s'", cfg.HTTPPort)
 	}
 
+	if len(cfg.HTTPSPort) == 0 {
+		return fmt.Errorf("invalid TCP port for HTTPS gateway: '%s'", cfg.HTTPSPort)
+	}
+
+	if len(cfg.AuthenticationFilePath) == 0 {
+		return fmt.Errorf("invalid AuthenticationFilePath for HTTPS gateway: '%s'", cfg.AuthenticationFilePath)
+	}
+
+	if len(cfg.AuthenticationKeyPath) == 0 {
+		return fmt.Errorf("invalid AuthenticationKeyPath for HTTPS gateway: '%s'", cfg.AuthenticationKeyPath)
+	}
+
 	go func() {
 		_ = runRestServer(ctx, cfg.GRPCPort, cfg.HTTPPort)
+	}()
+
+	go func() {
+		_ = runRestServerHttps(ctx, cfg.GRPCPort, cfg.HTTPSPort, cfg.AuthenticationFilePath, cfg.AuthenticationKeyPath)
 	}()
 
 	go func() {
@@ -166,4 +182,55 @@ func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
 
 	log.Info("Restful Server is serving at ", httpPort)
 	return srv.ListenAndServe()
+}
+
+func runRestServerHttps(ctx context.Context, grpcPort, httpsPort, certFile, keyFile string) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	endpoint := "localhost:" + grpcPort
+	conn, err := grpc.Dial(endpoint, opts...)
+	if err != nil {
+		return err
+	}
+
+	muxHealthOpt := runtime.WithHealthzEndpoint(grpc_health_v1.NewHealthClient(conn))
+	muxJSONOpt := runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames:   true,
+			EmitUnpopulated: true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	})
+	mux := runtime.NewServeMux(muxJSONOpt, muxHealthOpt)
+
+	if err := pb.RegisterBridgeServiceHandler(ctx, mux, conn); err != nil {
+		return err
+	}
+
+	srv := &http.Server{
+		ReadTimeout: 1 * time.Second, //nolint:gomnd
+		Addr:        ":" + httpsPort,
+		Handler:     allowCORS(mux),
+	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for range c {
+			_ = srv.Shutdown(ctx)
+			<-ctx.Done()
+		}
+
+		_, cancel := context.WithTimeout(ctx, 5*time.Second) //nolint:gomnd
+		defer cancel()
+
+		_ = srv.Shutdown(ctx)
+	}()
+
+	log.Info("Restful Server is serving at ", httpsPort)
+	return srv.ListenAndServeTLS(certFile, keyFile)
 }

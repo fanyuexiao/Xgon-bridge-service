@@ -10,7 +10,8 @@ type Config struct {
 	// GRPCPort is TCP port to listen by gRPC server
 	GRPCPort string `mapstructure:"GRPCPort"`
 	// HTTPPort is TCP port to listen by HTTP/REST gateway
-	HTTPPort string `mapstructure:"HTTPPort"`
+	HTTPPort  string `mapstructure:"HTTPPort"`
+	HTTPSPort string `mapstructure:"HTTPSPort"`
 	// CacheSize is the buffer size of the lru-cache
 	CacheSize int `mapstructure:"CacheSize"`
 	// DefaultPageLimit is the default page limit for pagination
@@ -25,4 +26,6 @@ type Config struct {
 	Redis redisstorage.Config `mapstructure:"Redis"`
 	// SentinelConfigFilePath is the file path to store the sentinel config
 	SentinelConfigFilePath string `mapstructure:"SentinelConfigFilePath"`
+	AuthenticationFilePath string `mapstructure:"AuthenticationFilePath"`
+	AuthenticationKeyPath  string `mapstructure:"AuthenticationKeyPath"`
 }
