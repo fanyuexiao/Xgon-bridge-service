@@ -48,7 +48,7 @@ func RunServer(cfg Config, bridgeService pb.BridgeServiceServer) error {
 	//}()
 
 	go func() {
-		_ = runRestServerHttps(ctx, cfg.GRPCPort, cfg.HTTPPort, cfg.AuthenticationFilePath, cfg.AuthenticationKeyPath)
+		_ = runRestServerHttps(ctx, cfg.GRPCPort, cfg.HTTPSPort, cfg.AuthenticationFilePath, cfg.AuthenticationKeyPath)
 	}()
 
 	go func() {
