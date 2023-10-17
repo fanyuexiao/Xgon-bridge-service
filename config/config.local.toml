@@ -44,7 +44,7 @@ MaxPageLimit = 100
 BridgeVersion = "v1"
 SentinelConfigFilePath = "/app/sentinel_config.json"
 AuthenticationFilePath = "/app/server.crt"
-AuthenticationKeyPath = "/app/server.key"
+AuthenticationKeyPath = "/app/server.pem"
     [BridgeServer.DB]
     Database = "postgres"
     User = "test_user"
