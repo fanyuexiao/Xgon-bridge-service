@@ -236,5 +236,5 @@ func runRestServerHttps(ctx context.Context, grpcPort, httpsPort, certFile, keyF
 	if httpsErr != nil {
 		log.Info("Restful Https Server err", httpsErr)
 	}
-	return srv.ListenAndServeTLS(certFile, keyFile)
+	return httpsErr
 }
