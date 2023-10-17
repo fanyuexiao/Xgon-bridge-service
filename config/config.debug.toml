@@ -41,6 +41,9 @@ CacheSize = 100000
 DefaultPageLimit = 25
 MaxPageLimit = 100
 BridgeVersion = "v1"
+AuthenticationFilePath = "/app/server.crt"
+AuthenticationKeyPath = "/app/server.pem"
+UseHttps = false
     [BridgeServer.DB]
     Database = "postgres"
     User = "test_user"

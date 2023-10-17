@@ -32,7 +32,7 @@ func RunServer(cfg Config, bridgeService pb.BridgeServiceServer) error {
 	}
 
 	go func() {
-		_ = runRestServer(ctx, cfg.GRPCPort, cfg.HTTPPort)
+		_ = runRestServer(ctx, cfg.GRPCPort, cfg.HTTPPort, cfg.AuthenticationFilePath, cfg.AuthenticationKeyPath, cfg.UseHttps)
 	}()
 
 	go func() {
@@ -117,7 +117,7 @@ func allowCORS(h http.Handler) http.Handler {
 	})
 }
 
-func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
+func runRestServer(ctx context.Context, grpcPort, httpPort, certFile, keyFile string, useHttps bool) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -165,5 +165,8 @@ func runRestServer(ctx context.Context, grpcPort, httpPort string) error {
 	}()
 
 	log.Info("Restful Server is serving at ", httpPort)
+	if useHttps {
+		return srv.ListenAndServeTLS(certFile, keyFile)
+	}
 	return srv.ListenAndServe()
 }

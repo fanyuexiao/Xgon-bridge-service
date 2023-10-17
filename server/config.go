@@ -25,4 +25,7 @@ type Config struct {
 	Redis redisstorage.Config `mapstructure:"Redis"`
 	// SentinelConfigFilePath is the file path to store the sentinel config
 	SentinelConfigFilePath string `mapstructure:"SentinelConfigFilePath"`
+	AuthenticationFilePath string `mapstructure:"AuthenticationFilePath"`
+	AuthenticationKeyPath  string `mapstructure:"AuthenticationKeyPath"`
+	UseHttps               bool   `mapstructure:"UseHttps"`
 }
